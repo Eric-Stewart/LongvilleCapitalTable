@@ -94,4 +94,7 @@ def download_summary():
 	return send_file(excel_file, as_attachment=True)
 
 if __name__ == '__main__':
-	app.run(debug=True)
+	porty = int(os.environ.get("PORT", 5000))
+    
+	print("port: " + str(porty))
+	app.run(host='0.0.0.0', port=porty, debug=True)
