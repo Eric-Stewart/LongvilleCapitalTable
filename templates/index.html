@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Longville Summary Table</title>
+</head>
+<body>
+    <h1>Longville Daily Stock Analysis</h1>
+    <table>
+        <thead>
+            <tr>
+                <!-- Modify the column headers as per your summary table structure -->
+                <th>runname</th>
+                <th>intervaltype</th>
+				<th>action</th>
+				<th>t_max</th>
+                <!-- Add more columns as needed -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in summary_data %}
+            <tr>
+                <!-- Modify the variables to match the column names in your summary table -->
+                <td>{{ row[0] }}</td>
+                <td>{{ row[1] }}</td>
+				<td>{{ row[2] }}</td>
+				<td>{{ row[4] }}</td>
+                <!-- Add more columns as needed -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+	    <a href="{{ url_for('download_summary') }}">Download Daily Activity</a>
+</body>
+</html>
+</body>
+</html>
