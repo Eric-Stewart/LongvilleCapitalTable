@@ -1,7 +1,4 @@
-Bootstrap_Flask==2.1.0
 Flask==2.2.2
-flask_bootstrap==3.3.7.1
-Flask_WTF==1.0.1
-pandas==2.0.1
+pandas==2.0.3
 pandas_stubs==1.2.0.35
 psycopg2==2.9.6
