@@ -5,12 +5,6 @@ import os
 
 app = Flask(__name__)
 
-#'postgres://AdminAdmin:AdminAdmin1!@stockdb.postgres.database.azure.com:5432/stockDB'
-#DB_HOST = "stockdb.postgres.database.azure.com:5432"
-#DB_NAME = "stockDB"
-#DB_USER = "AdminAdmin"
-#DB_PASSWORD = "AdminAdmin1!"
-
 DATABASE_URL = 'postgres://AdminAdmin:AdminAdmin1!@stockdb.postgres.database.azure.com:5432/stockDB'
 
 def get_summary_data(option=1):
@@ -19,40 +13,40 @@ def get_summary_data(option=1):
 		cursor = connection.cursor()
 
 		# Modify the query according to your summary table name and structure
-		query = '''SELECT DISTINCT rm.runName
-				  ,rm.intervalType
-				  ,NULL AS action
-				  ,1 AS order
-				  ,MAX(t) AS t_max
-			FROM runManager rm
-			WHERE rm.t >= (SELECT MAX(t)::timestamp::date FROM runManager)
-			  AND rm.intervalType = '1d'
-			GROUP BY rm.runName, rm.intervalType
-			UNION
-			SELECT 'Hourly Data Alerts', NULL, NULL, 2, NULL
-			UNION
-			SELECT runName
-				  ,'1h'
-				  ,action
-				  ,3
-				  ,t
-			FROM alertData
-			WHERE t >= (SELECT MAX(t)::timestamp::date FROM runManager)
-			UNION
-			SELECT 'Hourly Data', NULL, NULL, 3, NULL
-			UNION
-			SELECT DISTINCT rm.runName
-				  ,rm.intervalType
-				  ,NULL AS action
-				  ,4 AS order
-				  ,MAX(t) AS t_max
-			FROM runManager rm
-			WHERE rm.t >= (SELECT MAX(t)::timestamp::date FROM runManager)
-			  AND rm.intervalType = '1h'
-			  AND rm.runName NOT IN (SELECT DISTINCT runName FROM alertData
-									 WHERE t >= (SELECT MAX(t)::timestamp::date FROM alertData))
-			GROUP BY rm.runName, rm.intervalType
-			ORDER BY 4, 2, 1'''
+		query = '''SELECT DISTINCT SPLIT_PART(rm.runName, '_', 1) AS runName
+						  ,rm.intervalType
+						  ,' ' AS action
+						  ,1 AS order
+						  ,to_char(((MAX(t)) AT TIME ZONE 'UTC') AT TIME ZONE 'EST', 'DD/MM/YYYY  HH:MM am') AS t_max
+					FROM runManager rm
+					WHERE rm.t >= (SELECT MAX(t)::timestamp::date FROM runManager)
+					  AND rm.intervalType = '1d'
+					GROUP BY rm.runName, rm.intervalType
+					UNION
+					SELECT 'Hourly Data Alerts', ' ', ' ', 2, ' '
+					UNION
+					SELECT SPLIT_PART(runName, '_', 1)
+						  ,'1h'
+						  ,action
+						  ,3
+						  ,to_char((t AT TIME ZONE 'UTC') AT TIME ZONE 'EST', 'DD/MM/YYYY  HH:MM am') AS t_max
+					FROM alertData
+					WHERE t >= (SELECT MAX(t)::timestamp::date FROM runManager)
+					UNION
+					SELECT 'Hourly Data', ' ', ' ', 3, ' '
+					UNION
+					SELECT DISTINCT SPLIT_PART(rm.runName, '_', 1)
+						  ,rm.intervalType
+						  ,' ' AS action
+						  ,4 AS order
+						  ,to_char(((MAX(t)) AT TIME ZONE 'UTC') AT TIME ZONE 'EST', 'DD/MM/YYYY  HH:MM am') AS t_max
+					FROM runManager rm
+					WHERE rm.t >= (SELECT MAX(t)::timestamp::date FROM runManager)
+					  AND rm.intervalType = '1h'
+					  AND rm.runName NOT IN (SELECT DISTINCT runName FROM alertData
+											 WHERE t >= (SELECT MAX(t)::timestamp::date FROM alertData))
+					GROUP BY rm.runName, rm.intervalType
+					ORDER BY 4, 2, 1'''
 		query2 = '''SELECT rtt.*
 					FROM reportTableTemp rtt
 					 JOIN (SELECT PK
